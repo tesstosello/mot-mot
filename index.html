@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vocab Hub</title>
+<style>
+:root{
+  --ink:#1c2b24;
+  --paper:#f2ede1;
+  --card:#ffffff;
+  --accent:#2f6d4f;
+  --accent-dark:#1f4d38;
+  --err:#a63d2f;
+  --ok:#2f6d4f;
+  --muted:#6b6459;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+}
+html{scroll-padding-top: env(safe-area-inset-top, 0px); height:100%;}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#eee8da; --paper:#141a16; --card:#1d2620;
+    --accent:#7fd9ab; --accent-dark:#5fc491; --err:#e08b7d; --ok:#7fd9ab; --muted:#9a9686;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#eee8da; --paper:#141a16; --card:#1d2620;
+  --accent:#7fd9ab; --accent-dark:#5fc491; --err:#e08b7d; --ok:#7fd9ab; --muted:#9a9686;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:'Iowan Old Style','Georgia',serif;
+  min-height:100%; display:flex; justify-content:center;
+}
+.wrap{ width:100%; max-width:680px; padding:30px 20px 60px; }
+header.top{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:26px; }
+.eyebrow{ font-family:'Courier New',monospace; font-size:12px; color:var(--muted); margin:0 0 4px; }
+h1{ font-size:26px; margin:0; font-weight:600; }
+.back-link{ background:none; border:none; color:var(--muted); font-family:inherit; font-size:14px; cursor:pointer; padding:0; text-decoration:underline; }
+.back-link:hover{ color:var(--ink); }
+
+.view{ display:none; }
+.view.active{ display:block; }
+
+/* ---- Home ---- */
+.deck-list{ display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+.deck-card{
+  background:var(--card); border-radius:14px; padding:18px 20px;
+  border:1px solid rgba(120,120,100,0.15); display:flex; justify-content:space-between; align-items:center;
+  gap:14px; cursor:pointer;
+}
+.deck-card:hover{ border-color:var(--accent); }
+.deck-info h3{ margin:0 0 4px; font-size:17px; }
+.deck-info p{ margin:0; font-size:13px; color:var(--muted); font-family:'Courier New',monospace; }
+.deck-progress-pill{
+  font-family:'Courier New',monospace; font-size:11px; color:var(--accent);
+  background:rgba(127,217,171,0.14); padding:4px 10px; border-radius:20px; white-space:nowrap;
+}
+.deck-card{ flex-direction:column; align-items:stretch; }
+.deck-card-top{ display:flex; justify-content:space-between; align-items:center; gap:14px; }
+.deck-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.tag-chip{
+  font-family:'Courier New',monospace; font-size:10px; color:var(--muted);
+  background:rgba(120,120,100,0.12); padding:3px 8px; border-radius:20px;
+}
+.due-dot{ width:8px; height:8px; border-radius:50%; background:var(--err); display:inline-block; margin-right:6px; vertical-align:1px; }
+
+.top-controls{ display:flex; gap:10px; align-items:center; }
+.icon-btn{
+  background:transparent; border:1px solid rgba(120,120,100,0.3); color:var(--muted);
+  width:36px; height:36px; padding:0; border-radius:9px; font-size:15px; display:flex; align-items:center; justify-content:center;
+}
+.icon-btn:hover{ background:transparent; color:var(--ink); border-color:var(--ink); }
+
+.streak-bar{
+  display:flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-size:12px;
+  color:var(--muted); margin-bottom:18px;
+}
+.streak-bar .flame{ font-size:15px; }
+
+.search-row{ margin-bottom:16px; }
+.search-row input{
+  font-family:'Iowan Old Style','Georgia',serif; font-size:14px; padding:10px 14px; border-radius:9px;
+  border:1px solid rgba(120,120,100,0.3); background:var(--card); color:var(--ink); width:100%; outline:none;
+}
+.search-row input:focus{ border-color:var(--accent); }
+
+.tag-filter-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+.tag-filter-chip{
+  font-family:'Courier New',monospace; font-size:11px; padding:5px 11px; border-radius:20px; cursor:pointer;
+  border:1px solid rgba(120,120,100,0.3); color:var(--muted); background:transparent;
+}
+.tag-filter-chip.active{ background:var(--accent); color:var(--paper); border-color:var(--accent); }
+
+.quick-review-card{
+  background:var(--card); border:1px solid rgba(120,120,100,0.15); border-radius:14px; padding:16px 20px;
+  display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:18px;
+}
+.quick-review-card h4{ margin:0 0 3px; font-size:15px; }
+.quick-review-card p{ margin:0; font-size:12px; color:var(--muted); }
+
+.speaker-btn{
+  background:transparent; border:1px solid rgba(120,120,100,0.3); color:var(--muted);
+  width:34px; height:34px; padding:0; border-radius:50%; font-size:14px; margin-left:8px; vertical-align:middle;
+}
+.speaker-btn:hover{ background:transparent; color:var(--accent); border-color:var(--accent); }
+
+.stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:16px 0 20px; }
+.stats-box{ background:var(--card); border:1px solid rgba(120,120,100,0.15); border-radius:12px; padding:14px 10px; text-align:center; }
+.stats-box .n{ font-size:22px; font-weight:700; color:var(--accent); }
+.stats-box .l{ font-family:'Courier New',monospace; font-size:10px; color:var(--muted); margin-top:2px; }
+.weak-words{ margin-top:6px; }
+.weak-word-row{
+  display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(120,120,100,0.15); font-size:13px;
+}
+.weak-word-row .miss-count{ font-family:'Courier New',monospace; color:var(--err); font-size:11px; }
+.empty-state{
+  text-align:center; padding:50px 20px; color:var(--muted);
+}
+.big-actions{ display:flex; flex-direction:column; gap:10px; }
+button{
+  font-family:inherit; font-size:15px; padding:12px 20px; border-radius:9px; border:none;
+  cursor:pointer; background:var(--accent); color:var(--paper); transition:background 0.15s ease;
+}
+button:hover{ background:var(--accent-dark); }
+button.ghost{ background:transparent; color:var(--muted); border:1px solid rgba(120,120,100,0.3); }
+button.ghost:hover{ background:transparent; color:var(--ink); border-color:var(--ink); }
+button.danger{ background:transparent; color:var(--err); border:1px solid rgba(166,61,47,0.4); }
+button.danger:hover{ background:rgba(166,61,47,0.08); }
+button:disabled{ opacity:0.5; cursor:not-allowed; }
+
+.card{
+  background:var(--card); border-radius:14px; padding:28px 26px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.08); border:1px solid rgba(120,120,100,0.15);
+}
+
+/* ---- New deck chooser ---- */
+.method-grid{ display:flex; flex-direction:column; gap:12px; margin-top:18px; }
+.method-card{
+  display:flex; align-items:center; gap:14px; padding:18px; border-radius:12px;
+  border:1px solid rgba(120,120,100,0.2); cursor:pointer; background:var(--card);
+}
+.method-card:hover{ border-color:var(--accent); }
+.method-emoji{ font-size:26px; }
+.method-card h4{ margin:0 0 3px; font-size:15px; }
+.method-card p{ margin:0; font-size:13px; color:var(--muted); }
+
+/* ---- Editor ---- */
+input[type=text], textarea, input[type=file]{
+  font-family:'Iowan Old Style','Georgia',serif; font-size:14px; padding:9px 12px;
+  border-radius:7px; border:1px solid rgba(120,120,100,0.3); background:transparent; color:var(--ink); outline:none; width:100%;
+}
+input[type=text]:focus, textarea:focus{ border-color:var(--accent); }
+.field{ margin-bottom:16px; }
+.field label{ display:block; font-family:'Courier New',monospace; font-size:11px; color:var(--muted); margin-bottom:6px; }
+.edit-col-labels{
+  display:grid; grid-template-columns:1fr 1fr auto; gap:8px; font-family:'Courier New',monospace;
+  font-size:11px; color:var(--muted); padding-bottom:6px; border-bottom:1px solid rgba(120,120,100,0.25);
+}
+.edit-row{
+  display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:center; padding:8px 0;
+  border-bottom:1px solid rgba(120,120,100,0.15);
+}
+.edit-row button{ padding:6px 10px; font-size:12px; }
+.footer-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:10px; }
+.note{ font-size:12px; color:var(--muted); }
+.dropzone{
+  border:2px dashed rgba(120,120,100,0.35); border-radius:12px; padding:36px 20px; text-align:center;
+  color:var(--muted); cursor:pointer; margin-bottom:16px;
+}
+.dropzone:hover{ border-color:var(--accent); color:var(--ink); }
+.preview-img{ max-width:100%; border-radius:10px; margin-bottom:16px; display:none; }
+.scan-status{ font-size:13px; color:var(--muted); margin:8px 0; min-height:18px; }
+.spinner{
+  width:16px; height:16px; border:2px solid rgba(120,120,100,0.3); border-top-color:var(--accent);
+  border-radius:50%; display:inline-block; vertical-align:-3px; margin-right:8px;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* ---- Quiz ---- */
+.progress-row{ display:flex; align-items:center; gap:12px; margin:20px 0 26px; }
+.progress-track{ flex:1; height:6px; background:rgba(120,120,100,0.18); border-radius:3px; overflow:hidden; }
+.progress-fill{ height:100%; background:var(--accent); width:0%; transition:width 0.35s ease; }
+.progress-label{ font-family:'Courier New',monospace; font-size:13px; color:var(--muted); white-space:nowrap; }
+.fr-label{ font-family:'Courier New',monospace; font-size:12px; color:var(--muted); margin:0 0 10px; }
+.fr-word{ font-size:24px; line-height:1.35; margin:0 0 10px; font-weight:600; }
+.repeat-badge{
+  font-family:'Courier New',monospace; font-size:12px; color:var(--accent); background:rgba(127,217,171,0.12);
+  display:inline-block; padding:4px 10px; border-radius:20px; margin:0 0 18px;
+}
+.attempts{ min-height:22px; margin-bottom:10px; display:flex; flex-wrap:wrap; gap:8px; }
+.attempt-chip{ font-family:'Courier New',monospace; font-size:13px; color:var(--err); text-decoration:line-through; opacity:0.75; }
+.answer-input{
+  font-size:18px; padding:13px 16px; border-radius:9px; border:2px solid rgba(120,120,100,0.35);
+}
+.answer-input.wrong{ border-color:var(--err); }
+.answer-input.right{ border-color:var(--ok); }
+.feedback{ min-height:24px; font-size:14px; margin-top:10px; }
+.feedback.err{ color:var(--err); }
+.feedback.ok{ color:var(--ok); }
+.link-row{ display:flex; gap:18px; margin-top:8px; }
+.link-btn{ background:none; color:var(--muted); text-decoration:underline; padding:0; font-size:13px; }
+.link-btn:hover{ background:none; color:var(--ink); }
+.hint-text, .reveal-text{ font-size:13px; margin:8px 0 0; }
+.hint-text{ color:var(--muted); font-style:italic; }
+.reveal-text{ color:var(--accent); font-weight:600; }
+.hidden{ display:none !important; }
+
+.done-badge{
+  width:64px; height:64px; line-height:64px; border-radius:50%; background:var(--accent); color:var(--paper);
+  font-size:30px; margin:0 auto 18px; transform:scale(0);
+}
+.done-badge.pop{ animation:pop-in 0.55s cubic-bezier(.34,1.56,.64,1) forwards; }
+@keyframes pop-in{
+  0%{ transform:scale(0) rotate(-10deg); } 60%{ transform:scale(1.15) rotate(4deg); } 100%{ transform:scale(1) rotate(0deg); }
+}
+.done-screen{ text-align:center; }
+.score-block{ margin:18px 0 30px; }
+.score-line{ display:flex; align-items:baseline; justify-content:center; gap:8px; }
+.score-num{ font-size:56px; font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums; }
+.score-total{ font-size:22px; color:var(--muted); }
+.score-caption{ font-family:'Courier New',monospace; font-size:12px; color:var(--muted); margin:2px 0 14px; }
+.score-msg{ font-size:15px; margin:0; }
+.done-actions{ display:flex; gap:10px; justify-content:center; }
+
+/* ---- Assemble mode ---- */
+.assemble-answer{
+  min-height:48px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  border-bottom:2px solid rgba(120,120,100,0.3); padding-bottom:12px; margin-bottom:20px;
+}
+.assemble-answer .placeholder{ color:var(--muted); font-size:14px; font-style:italic; }
+.tile{
+  font-family:inherit; font-size:15px; padding:9px 14px; border-radius:8px; border:1px solid rgba(120,120,100,0.3);
+  background:var(--card); color:var(--ink); cursor:pointer; user-select:none;
+}
+.tile:hover{ border-color:var(--accent); }
+.tile.placed{ opacity:0.35; pointer-events:none; }
+.assemble-tiles{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.answer-tile{
+  font-family:inherit; font-size:15px; padding:8px 12px; border-radius:8px; background:rgba(127,217,171,0.14);
+  border:1px solid rgba(127,217,171,0.4); color:var(--ink); cursor:pointer;
+}
+
+/* ---- Match mode ---- */
+.match-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; margin-bottom:16px; }
+.match-col{ display:flex; flex-direction:column; gap:8px; }
+.match-item{
+  font-family:inherit; font-size:14px; padding:11px 14px; border-radius:9px; border:1px solid rgba(120,120,100,0.3);
+  background:var(--card); color:var(--ink); cursor:pointer; text-align:left;
+}
+.match-item:hover{ border-color:var(--accent); }
+.match-item.selected{ border-color:var(--accent); background:rgba(127,217,171,0.14); }
+.match-item.correct{ border-color:var(--ok); background:rgba(127,217,171,0.22); opacity:0.6; pointer-events:none; }
+.match-item.wrong{ border-color:var(--err); background:rgba(166,61,47,0.14); }
+.match-item.matched-hidden{ visibility:hidden; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ ACCOUNT (login / signup) ============ -->
+  <div class="view active" id="view-account">
+    <header class="top">
+      <div>
+        <p class="eyebrow">Vocab Hub</p>
+        <h1 id="accountTitle">Connexion</h1>
+      </div>
+    </header>
+    <div class="card">
+      <div class="field">
+        <label>Prénom (identifiant)</label>
+        <input type="text" id="accountName" placeholder="ex : Léa" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" id="accountPassword" placeholder="••••••••" autocomplete="off">
+      </div>
+      <div class="field hidden" id="accountPasswordConfirmField">
+        <label>Confirme le mot de passe</label>
+        <input type="password" id="accountPasswordConfirm" placeholder="••••••••" autocomplete="off">
+      </div>
+      <p class="note" id="accountNote" style="margin-bottom:14px;"></p>
+      <div class="footer-actions">
+        <button class="ghost" id="accountToggleModeBtn">Créer un compte</button>
+        <button id="accountSubmitBtn">Se connecter</button>
+      </div>
+      <p class="note" style="margin-top:16px;">Le compte est enregistré uniquement dans ce navigateur (pas dans le cloud) — chaque prénom a ses propres fiches.</p>
+    </div>
+  </div>
+
+  <!-- ============ HOME ============ -->
+  <div class="view" id="view-home">
+    <header class="top">
+      <div>
+        <p class="eyebrow" id="homeEyebrow">Vocab Hub</p>
+        <h1>Mes fiches de vocabulaire</h1>
+      </div>
+      <div class="top-controls">
+        <button class="icon-btn" id="themeToggleBtn" title="Changer de thème">🌙</button>
+        <button class="back-link" id="logoutBtn">Se déconnecter</button>
+      </div>
+    </header>
+
+    <div class="streak-bar" id="streakBar"></div>
+
+    <div class="quick-review-card hidden" id="quickReviewCard">
+      <div><h4>🎯 Révision rapide</h4><p id="quickReviewSub">Retravaille tes mots les plus difficiles, toutes fiches confondues.</p></div>
+      <button id="quickReviewBtn">C'est parti</button>
+    </div>
+
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Rechercher une fiche ou un tag…">
+    </div>
+    <div class="tag-filter-row" id="tagFilterRow"></div>
+
+    <div class="deck-list" id="deckList"></div>
+
+    <div class="empty-state hidden" id="emptyState">
+      <p>Tu n'as pas encore de fiche. Crée-en une pour commencer à réviser.</p>
+    </div>
+
+    <div class="big-actions">
+      <button id="goNewDeckBtn">+ Nouvelle fiche</button>
+    </div>
+  </div>
+
+  <!-- ============ NEW DECK: choose method ============ -->
+  <div class="view" id="view-new-method">
+    <header class="top">
+      <div>
+        <p class="eyebrow">Nouvelle fiche</p>
+        <h1>Comment veux-tu l'ajouter ?</h1>
+      </div>
+      <button class="back-link" data-nav="view-home">← Retour</button>
+    </header>
+    <div class="method-grid">
+      <div class="method-card" id="methodPhoto">
+        <div class="method-emoji">📷</div>
+        <div><h4>Prendre une photo</h4><p>Photographie ta liste de vocabulaire, elle est transformée en quiz automatiquement.</p></div>
+      </div>
+      <div class="method-card" id="methodManual">
+        <div class="method-emoji">✍️</div>
+        <div><h4>Saisir manuellement</h4><p>Ajoute les mots un par un, français / anglais.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ NEW DECK: photo ============ -->
+  <div class="view" id="view-new-photo">
+    <header class="top">
+      <div>
+        <p class="eyebrow">Nouvelle fiche · Photo</p>
+        <h1>Importer depuis une photo</h1>
+      </div>
+      <button class="back-link" data-nav="view-new-method">← Retour</button>
+    </header>
+    <div class="card">
+      <div class="dropzone" id="dropzone">
+        <p>Clique pour choisir une photo de ta liste de vocabulaire</p>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden">
+      </div>
+      <img class="preview-img" id="previewImg">
+      <p class="scan-status" id="scanStatus"></p>
+      <div class="field">
+        <label>Nom de la fiche</label>
+        <input type="text" id="photoDeckName" placeholder="ex : Chapitre 5 - Vocabulaire">
+      </div>
+      <div class="field">
+        <label>Tags (séparés par des virgules, optionnel)</label>
+        <input type="text" id="photoDeckTags" placeholder="ex : anglais, chapitre 5">
+      </div>
+      <div id="photoEditWrap" class="hidden">
+        <div class="edit-col-labels"><span>Français</span><span>Anglais</span><span></span></div>
+        <div id="photoEditList"></div>
+        <button class="ghost" id="photoAddRow" style="margin-top:10px;">+ Ajouter un mot</button>
+      </div>
+      <div class="footer-actions">
+        <span class="note" id="photoNote"></span>
+        <button id="photoSaveBtn" disabled>Créer la fiche</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ NEW / EDIT DECK: manual ============ -->
+  <div class="view" id="view-editor">
+    <header class="top">
+      <div>
+        <p class="eyebrow" id="editorEyebrow">Nouvelle fiche · Manuel</p>
+        <h1 id="editorTitle">Ajouter des mots</h1>
+      </div>
+      <button class="back-link" data-nav="view-home" id="editorBack">← Retour</button>
+    </header>
+    <div class="card">
+      <div class="field">
+        <label>Nom de la fiche</label>
+        <input type="text" id="editorDeckName" placeholder="ex : Job Hunt">
+      </div>
+      <div class="field">
+        <label>Tags (séparés par des virgules, optionnel)</label>
+        <input type="text" id="editorDeckTags" placeholder="ex : anglais, chapitre 5">
+      </div>
+      <div class="edit-col-labels"><span>Français (question)</span><span>Anglais (réponse)</span><span></span></div>
+      <div id="editorList"></div>
+      <button class="ghost" id="editorAddRow" style="margin-top:10px;">+ Ajouter un mot</button>
+      <div class="footer-actions">
+        <span class="note" id="editorNote"></span>
+        <div style="display:flex; gap:10px;">
+          <button class="danger hidden" id="editorDeleteBtn">Supprimer la fiche</button>
+          <button id="editorSaveBtn">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DECK DETAIL ============ -->
+  <div class="view" id="view-deck">
+    <header class="top">
+      <div>
+        <p class="eyebrow">Fiche</p>
+        <h1 id="deckDetailName">—</h1>
+      </div>
+      <button class="back-link" data-nav="view-home">← Retour</button>
+    </header>
+    <p class="note" id="deckDetailInfo" style="margin-bottom:10px;"></p>
+    <p class="note" id="deckDueNote" style="margin-bottom:20px;"></p>
+
+    <div class="stats-grid" id="deckStatsGrid"></div>
+    <div class="weak-words hidden" id="deckWeakWordsWrap">
+      <p class="eyebrow" style="margin-bottom:6px;">Mots à travailler</p>
+      <div id="deckWeakWordsList"></div>
+    </div>
+
+    <div class="big-actions" style="margin-top:20px;">
+      <button id="deckStartBtn">Commencer le quiz</button>
+      <button class="ghost hidden" id="deckResumeBtn">Reprendre où j'en étais</button>
+      <button class="ghost" id="deckEditBtn">Modifier les mots</button>
+      <button class="ghost" id="deckDuplicateBtn">Dupliquer cette fiche</button>
+      <button class="danger" id="deckDeleteBtn">Supprimer cette fiche</button>
+    </div>
+  </div>
+
+  <!-- ============ MODE SELECT ============ -->
+  <div class="view" id="view-mode-select">
+    <header class="top">
+      <div>
+        <p class="eyebrow" id="modeSelectDeckLabel">Fiche</p>
+        <h1>Comment veux-tu apprendre ?</h1>
+      </div>
+      <button class="back-link" data-nav="view-home">← Retour</button>
+    </header>
+    <div class="method-grid">
+      <div class="method-card" data-mode="write">
+        <div class="method-emoji">⌨️</div>
+        <div><h4>Écrire</h4><p>Tu tapes la traduction toi-même, lettre par lettre.</p></div>
+      </div>
+      <div class="method-card" data-mode="assemble">
+        <div class="method-emoji">🧩</div>
+        <div><h4>Assembler les mots</h4><p>Tu reconstitues la réponse en cliquant les morceaux dans l'ordre.</p></div>
+      </div>
+      <div class="method-card" data-mode="match">
+        <div class="method-emoji">🔗</div>
+        <div><h4>Relier les mots</h4><p>Tu relies chaque mot français à sa traduction anglaise.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ QUIZ ============ -->
+  <div class="view" id="view-quiz">
+    <header class="top">
+      <div>
+        <p class="eyebrow" id="quizDeckLabel">Fiche</p>
+        <h1 id="quizModeTitle">Écris le mot en anglais</h1>
+      </div>
+      <button class="back-link" id="quizBackBtn">← Quitter</button>
+    </header>
+
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">—</div>
+    </div>
+
+    <!-- WRITE mode -->
+    <div class="card" id="quizCard">
+      <p class="fr-label">Traduis en anglais :</p>
+      <p class="fr-word" id="frWord"></p>
+      <p class="repeat-badge hidden" id="repeatBadge"></p>
+
+      <div class="attempts" id="attemptsRow"></div>
+
+      <form id="answerForm" autocomplete="off">
+        <input type="text" id="answerInput" class="answer-input" placeholder="Écris ta réponse ici" autofocus>
+        <div class="feedback" id="feedback"></div>
+        <div class="link-row">
+          <button type="submit">Valider</button>
+        </div>
+        <div class="link-row">
+          <button type="button" class="ghost link-btn" id="hintBtn">Voir un indice</button>
+          <button type="button" class="ghost link-btn" id="revealBtn">Voir la correction</button>
+        </div>
+        <p class="hint-text hidden" id="hintText"></p>
+        <p class="reveal-text hidden" id="revealText"></p>
+      </form>
+    </div>
+
+    <!-- ASSEMBLE mode -->
+    <div class="card hidden" id="assembleCard">
+      <p class="fr-label">Reconstitue la réponse en anglais :</p>
+      <p class="fr-word" id="assembleFrWord"></p>
+      <p class="repeat-badge hidden" id="assembleRepeatBadge"></p>
+      <div class="assemble-answer" id="assembleAnswerSlot"></div>
+      <div class="assemble-tiles" id="assembleTiles"></div>
+      <div class="feedback" id="assembleFeedback"></div>
+      <div class="link-row">
+        <button type="button" class="ghost link-btn" id="assembleClearBtn">Effacer</button>
+        <button type="button" class="ghost link-btn" id="assembleRevealBtn">Voir la correction</button>
+      </div>
+    </div>
+
+    <!-- MATCH mode -->
+    <div class="card hidden" id="matchCard">
+      <p class="fr-label">Relie chaque mot français à sa traduction :</p>
+      <div class="match-grid">
+        <div class="match-col" id="matchColFr"></div>
+        <div class="match-col" id="matchColEn"></div>
+      </div>
+      <div class="feedback" id="matchFeedback"></div>
+    </div>
+
+    <div class="card done-screen hidden" id="doneCard">
+      <div class="done-badge" id="doneBadge">✓</div>
+      <h2>Terminé !</h2>
+      <p>Fiche terminée.</p>
+      <div class="score-block">
+        <div class="score-line">
+          <span class="score-num" id="scoreNum">0</span>
+          <span class="score-total" id="scoreTotal">/ 0</span>
+        </div>
+        <p class="score-caption">mots trouvés du premier coup</p>
+        <p class="score-msg" id="scoreMsg"></p>
+      </div>
+      <div class="done-actions">
+        <button class="ghost" id="doneHomeBtn">Retour à l'accueil</button>
+        <button id="doneRestartBtn">Refaire la fiche</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================
+   ACCOUNTS (local only, per browser)
+========================================================= */
+const USERS_KEY = 'vocabhub-users-v1';
+const SESSION_KEY = 'vocabhub-session-v1';
+
+function simpleHash(str){
+  // Not real security — just avoids storing the plain password as-is.
+  let h=0;
+  for(let i=0;i<str.length;i++){ h=(h*31 + str.charCodeAt(i)) | 0; }
+  return 'h'+h+'-'+str.length;
+}
+function loadUsers(){
+  try{
+    const raw=localStorage.getItem(USERS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveUsers(users){
+  try{ localStorage.setItem(USERS_KEY, JSON.stringify(users)); }catch(e){}
+}
+function getSessionUser(){
+  try{ return localStorage.getItem(SESSION_KEY) || null; }catch(e){ return null; }
+}
+function setSessionUser(name){
+  try{
+    if(name===null){ localStorage.removeItem(SESSION_KEY); }
+    else{ localStorage.setItem(SESSION_KEY, name); }
+  }catch(e){}
+}
+
+let currentUser = null;
+let accountMode = 'login'; // 'login' | 'signup'
+
+function normalizeUsername(name){ return name.trim().toLowerCase(); }
+
+function renderAccountView(){
+  const title=document.getElementById('accountTitle');
+  const submitBtn=document.getElementById('accountSubmitBtn');
+  const toggleBtn=document.getElementById('accountToggleModeBtn');
+  const confirmField=document.getElementById('accountPasswordConfirmField');
+  document.getElementById('accountNote').textContent='';
+  if(accountMode==='login'){
+    title.textContent='Connexion';
+    submitBtn.textContent='Se connecter';
+    toggleBtn.textContent='Créer un compte';
+    confirmField.classList.add('hidden');
+  } else {
+    title.textContent='Créer un compte';
+    submitBtn.textContent='Créer mon compte';
+    toggleBtn.textContent="J'ai déjà un compte";
+    confirmField.classList.remove('hidden');
+  }
+}
+
+document.getElementById('accountToggleModeBtn').addEventListener('click', function(){
+  accountMode = accountMode==='login' ? 'signup' : 'login';
+  renderAccountView();
+});
+
+document.getElementById('accountSubmitBtn').addEventListener('click', function(){
+  const rawName=document.getElementById('accountName').value;
+  const name=rawName.trim();
+  const password=document.getElementById('accountPassword').value;
+  const note=document.getElementById('accountNote');
+  if(!name){ note.textContent='Écris ton prénom.'; return; }
+  if(!password){ note.textContent='Choisis un mot de passe.'; return; }
+
+  const key=normalizeUsername(name);
+  const users=loadUsers();
+
+  if(accountMode==='signup'){
+    const confirm=document.getElementById('accountPasswordConfirm').value;
+    if(password!==confirm){ note.textContent='Les mots de passe ne correspondent pas.'; return; }
+    if(users[key]){ note.textContent='Ce prénom est déjà pris, choisis-en un autre ou connecte-toi.'; return; }
+    users[key] = { displayName:name, passwordHash: simpleHash(password) };
+    saveUsers(users);
+    logIn(key, users[key].displayName);
+  } else {
+    const user=users[key];
+    if(!user || user.passwordHash!==simpleHash(password)){
+      note.textContent='Prénom ou mot de passe incorrect.';
+      return;
+    }
+    logIn(key, user.displayName);
+  }
+});
+
+function logIn(userKey, displayName){
+  currentUser=userKey;
+  setSessionUser(userKey);
+  document.getElementById('homeEyebrow').textContent='Vocab Hub · '+displayName;
+  seedDefaultDeckIfEmpty();
+  decks=loadDecks();
+  showView('view-home');
+  renderHome();
+}
+
+document.getElementById('logoutBtn').addEventListener('click', function(){
+  currentUser=null;
+  setSessionUser(null);
+  accountMode='login';
+  document.getElementById('accountName').value='';
+  document.getElementById('accountPassword').value='';
+  document.getElementById('accountPasswordConfirm').value='';
+  renderAccountView();
+  showView('view-account');
+});
+
+/* =========================================================
+   STORAGE (scoped per logged-in user)
+========================================================= */
+function decksKey(){ return 'vocabhub-decks-v1-'+currentUser; }
+function progressKey(){ return 'vocabhub-progress-v1-'+currentUser; }
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function loadDecks(){
+  try{
+    const raw = localStorage.getItem(decksKey());
+    if(!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  }catch(e){ return []; }
+}
+function saveDecks(decks){
+  try{ localStorage.setItem(decksKey(), JSON.stringify(decks)); }catch(e){}
+}
+function loadAllProgress(){
+  try{
+    const raw = localStorage.getItem(progressKey());
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveAllProgress(p){
+  try{ localStorage.setItem(progressKey(), JSON.stringify(p)); }catch(e){}
+}
+function getProgress(deckId){
+  const all=loadAllProgress();
+  return all[deckId] || null;
+}
+function setProgress(deckId, state){
+  const all=loadAllProgress();
+  all[deckId]=state;
+  saveAllProgress(all);
+}
+function clearProgress(deckId){
+  const all=loadAllProgress();
+  delete all[deckId];
+  saveAllProgress(all);
+}
+
+/* ---- Stats (reviews count, history, per-word miss counts) ---- */
+function statsKey(){ return 'vocabhub-stats-v1-'+currentUser; }
+function loadStats(){
+  try{
+    const raw=localStorage.getItem(statsKey());
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveStats(s){
+  try{ localStorage.setItem(statsKey(), JSON.stringify(s)); }catch(e){}
+}
+function getDeckStats(deckId){
+  const all=loadStats();
+  return all[deckId] || { timesReviewed:0, history:[], wordMissCounts:{}, lastReviewedAt:null };
+}
+function recordWordMiss(deckId, wordId){
+  const all=loadStats();
+  if(!all[deckId]) all[deckId]={ timesReviewed:0, history:[], wordMissCounts:{}, lastReviewedAt:null };
+  all[deckId].wordMissCounts[wordId] = (all[deckId].wordMissCounts[wordId]||0) + 1;
+  saveStats(all);
+}
+function recordDeckCompletion(deckId, firstTryCorrect, total){
+  const all=loadStats();
+  if(!all[deckId]) all[deckId]={ timesReviewed:0, history:[], wordMissCounts:{}, lastReviewedAt:null };
+  all[deckId].timesReviewed += 1;
+  all[deckId].lastReviewedAt = Date.now();
+  const pct = total>0 ? Math.round((firstTryCorrect/total)*100) : 0;
+  all[deckId].history.push({ date: Date.now(), pct: pct });
+  if(all[deckId].history.length>30) all[deckId].history=all[deckId].history.slice(-30);
+  saveStats(all);
+  recordDailyActivity();
+}
+function weakWordsAcrossDecks(limit){
+  const all=loadStats();
+  const rows=[];
+  decks.forEach(function(deck){
+    const s=all[deck.id];
+    if(!s) return;
+    Object.keys(s.wordMissCounts).forEach(function(wordId){
+      const word=deck.words.find(function(w){ return w.id===wordId; });
+      if(word){ rows.push({ deckId:deck.id, deckName:deck.name, word:word, count:s.wordMissCounts[wordId] }); }
+    });
+  });
+  rows.sort(function(a,b){ return b.count-a.count; });
+  return rows.slice(0, limit||20);
+}
+
+/* ---- Spaced repetition (simple): suggest next review based on last score ---- */
+function nextReviewDelayDays(pct){
+  if(pct>=90) return 7;
+  if(pct>=70) return 3;
+  if(pct>=40) return 1;
+  return 0; // due again today/now
+}
+function isDeckDue(deckId){
+  const s=getDeckStats(deckId);
+  if(!s.lastReviewedAt) return true; // never reviewed = always show as "à réviser"
+  const lastPct = s.history.length ? s.history[s.history.length-1].pct : 0;
+  const delay = nextReviewDelayDays(lastPct);
+  const dueAt = s.lastReviewedAt + delay*24*60*60*1000;
+  return Date.now() >= dueAt;
+}
+
+/* ---- Streak ---- */
+function streakKey(){ return 'vocabhub-streak-v1-'+currentUser; }
+function loadStreak(){
+  try{
+    const raw=localStorage.getItem(streakKey());
+    return raw ? JSON.parse(raw) : { count:0, lastDate:null };
+  }catch(e){ return { count:0, lastDate:null }; }
+}
+function saveStreak(s){ try{ localStorage.setItem(streakKey(), JSON.stringify(s)); }catch(e){} }
+function dateStr(ts){ return new Date(ts).toISOString().slice(0,10); }
+function recordDailyActivity(){
+  const streak=loadStreak();
+  const today=dateStr(Date.now());
+  if(streak.lastDate===today) return;
+  const yesterday=dateStr(Date.now()-86400000);
+  if(streak.lastDate===yesterday){ streak.count += 1; }
+  else{ streak.count = 1; }
+  streak.lastDate=today;
+  saveStreak(streak);
+}
+function renderStreakBar(){
+  const streak=loadStreak();
+  const bar=document.getElementById('streakBar');
+  if(streak.count<=0){
+    bar.innerHTML='<span class="flame">🔥</span> Révise aujourd\'hui pour démarrer ta série';
+  } else {
+    const today=dateStr(Date.now());
+    const active = streak.lastDate===today;
+    bar.innerHTML='<span class="flame">🔥</span> '+streak.count+' jour'+(streak.count===1?'':'s')+' de suite'+(active?'':' (révise aujourd\'hui pour continuer)');
+  }
+}
+
+/* ---- Theme toggle ---- */
+function themeKey(){ return 'vocabhub-theme-v1'; }
+function applyStoredTheme(){
+  try{
+    const t=localStorage.getItem(themeKey());
+    if(t==='dark' || t==='light'){ document.documentElement.setAttribute('data-theme', t); }
+  }catch(e){}
+  updateThemeIcon();
+}
+function updateThemeIcon(){
+  const t=document.documentElement.getAttribute('data-theme');
+  document.getElementById('themeToggleBtn').textContent = t==='dark' ? '☀️' : (t==='light' ? '🌙' : '🌓');
+}
+document.getElementById('themeToggleBtn').addEventListener('click', function(){
+  const current=document.documentElement.getAttribute('data-theme');
+  const next = current==='dark' ? 'light' : (current==='light' ? '' : 'dark');
+  if(next===''){ document.documentElement.removeAttribute('data-theme'); }
+  else{ document.documentElement.setAttribute('data-theme', next); }
+  try{ localStorage.setItem(themeKey(), next); }catch(e){}
+  updateThemeIcon();
+});
+applyStoredTheme();
+
+/* ---- Audio pronunciation ---- */
+function speak(text){
+  try{
+    if(!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='en-US';
+    u.rate=0.95;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+const DEFAULT_JOB_HUNT_WORDS = [
+  {fr:"Postuler pour", en:"to apply for"},
+  {fr:"Un candidat", en:"applicant"},
+  {fr:"Petites annonces", en:"classified ads"},
+  {fr:"Une lettre de motivation", en:"cover letter"},
+  {fr:"Un CV", en:"CV"},
+  {fr:"Être au chômage", en:"to be unemployed"},
+  {fr:"Être sans emploi (autre mot)", en:"jobless"},
+  {fr:"Un demandeur d'emploi", en:"job-seeker"},
+  {fr:"Se faire embaucher", en:"to get employed"},
+  {fr:"Entrer dans la vie active", en:"to enter the working world"},
+  {fr:"Faire attention à / ne pas faire quelque chose", en:"to be careful not to"},
+  {fr:"Être efficace", en:"to be effective"},
+  {fr:"Faire gagner du temps", en:"to be time-saving"},
+  {fr:"Faciliter quelque chose", en:"to facilitate"},
+  {fr:"Prendre / courir un risque", en:"to run a risk"},
+  {fr:"Prendre des précautions", en:"to take precautions"},
+  {fr:"Un conseiller d'orientation", en:"career adviser"},
+  {fr:"Un coach", en:"coach"},
+  {fr:"Profiter des conseils de quelqu'un", en:"to benefit from somebody's advice"},
+  {fr:"Avoir recours à / utiliser", en:"to resort to"},
+  {fr:"Prendre en compte (un conseil)", en:"to take into account"},
+  {fr:"Coacher quelqu'un", en:"to coach somebody"},
+  {fr:"Être coaché(e) en quelque chose", en:"to be coached in something"},
+  {fr:"Parler de sa personnalité", en:"to speak about one's personality"},
+  {fr:"Être digne de confiance", en:"to be trustworthy"},
+  {fr:"Avoir des qualités / défauts professionnels", en:"to have work qualities/faults"},
+  {fr:"Se mettre en valeur / se promouvoir", en:"to promote oneself"},
+  {fr:"Un diplôme", en:"diploma"},
+  {fr:"Une recommandation", en:"endorsement"},
+  {fr:"Un diplômé", en:"graduate"},
+  {fr:"Une qualification", en:"qualification"},
+  {fr:"Compétence(s) en", en:"proficiency in"},
+  {fr:"Être expérimenté(e)", en:"to be experienced"},
+  {fr:"Être qualifié(e) pour un poste", en:"to be qualified for a job"},
+  {fr:"Être diplômé(e) de", en:"to graduate from"},
+  {fr:"Avoir de l'expérience professionnelle", en:"to have work experience"},
+  {fr:"Avantages en nature", en:"perks"}
+];
+
+function seedDefaultDeckIfEmpty(){
+  const existing = loadDecks();
+  if(existing.length===0){
+    const deck={
+      id:'job-hunt-default',
+      name:'Job Hunt',
+      words: DEFAULT_JOB_HUNT_WORDS.map(function(w){ return {id:uid(), fr:w.fr, en: Array.isArray(w.en)?w.en:[w.en]}; }),
+      createdAt: Date.now()
+    };
+    saveDecks([deck]);
+  }
+}
+let decks = [];
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+function showView(id){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+document.querySelectorAll('[data-nav]').forEach(function(btn){
+  btn.addEventListener('click', function(){ showView(btn.getAttribute('data-nav')); renderHome(); });
+});
+
+/* =========================================================
+   HOME
+========================================================= */
+let activeTagFilter=null;
+let searchTerm='';
+
+function allTags(){
+  const set=new Set();
+  decks.forEach(function(d){ (d.tags||[]).forEach(function(t){ set.add(t); }); });
+  return Array.from(set).sort();
+}
+
+function renderTagFilterRow(){
+  const row=document.getElementById('tagFilterRow');
+  const tags=allTags();
+  row.innerHTML='';
+  if(tags.length===0){ return; }
+  tags.forEach(function(tag){
+    const chip=document.createElement('button');
+    chip.type='button';
+    chip.className='tag-filter-chip'+(activeTagFilter===tag ? ' active':'');
+    chip.textContent=tag;
+    chip.addEventListener('click', function(){
+      activeTagFilter = (activeTagFilter===tag) ? null : tag;
+      renderHome();
+    });
+    row.appendChild(chip);
+  });
+}
+
+function renderQuickReview(){
+  const card=document.getElementById('quickReviewCard');
+  const weak=weakWordsAcrossDecks(50);
+  if(weak.length===0){ card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  document.getElementById('quickReviewSub').textContent =
+    weak.length+' mot'+(weak.length===1?'':'s')+' à consolider, toutes fiches confondues.';
+}
+
+document.getElementById('searchInput').addEventListener('input', function(e){
+  searchTerm=e.target.value.trim().toLowerCase();
+  renderHome();
+});
+
+function renderHome(){
+  decks = loadDecks();
+  renderStreakBar();
+  renderTagFilterRow();
+  renderQuickReview();
+
+  const list=document.getElementById('deckList');
+  const empty=document.getElementById('emptyState');
+  list.innerHTML='';
+
+  let visibleDecks=decks;
+  if(activeTagFilter){
+    visibleDecks=visibleDecks.filter(function(d){ return (d.tags||[]).includes(activeTagFilter); });
+  }
+  if(searchTerm){
+    visibleDecks=visibleDecks.filter(function(d){
+      const inName=d.name.toLowerCase().includes(searchTerm);
+      const inTags=(d.tags||[]).some(function(t){ return t.toLowerCase().includes(searchTerm); });
+      return inName || inTags;
+    });
+  }
+
+  if(decks.length===0){
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  if(visibleDecks.length===0){
+    const none=document.createElement('p');
+    none.className='note';
+    none.textContent='Aucune fiche ne correspond à ta recherche.';
+    list.appendChild(none);
+    return;
+  }
+
+  visibleDecks.forEach(function(deck){
+    const prog=getProgress(deck.id);
+    const due=isDeckDue(deck.id);
+    const row=document.createElement('div');
+    row.className='deck-card';
+    const remaining = prog ? (prog.totalWordsSeen - prog.masteredIds.length) : deck.words.length;
+    const pillText = prog && !prog.finished
+      ? (remaining+' mot'+(remaining===1?'':'s')+' restant'+(remaining===1?'':'s'))
+      : (deck.words.length+' mots');
+    const tagsHtml=(deck.tags||[]).map(function(t){ return '<span class="tag-chip">'+escapeHtml(t)+'</span>'; }).join('');
+    row.innerHTML =
+      '<div class="deck-card-top">'+
+      '<div class="deck-info"><h3>'+(due?'<span class="due-dot" title="À réviser"></span>':'')+escapeHtml(deck.name)+'</h3>'+
+      '<p>'+deck.words.length+' mots</p></div>'+
+      '<span class="deck-progress-pill">'+pillText+'</span>'+
+      '</div>'+
+      (tagsHtml ? '<div class="deck-tags">'+tagsHtml+'</div>' : '');
+    row.addEventListener('click', function(){ openDeckDetail(deck.id); });
+    list.appendChild(row);
+  });
+}
+function escapeHtml(s){
+  const d=document.createElement('div'); d.textContent=s; return d.innerHTML;
+}
+
+document.getElementById('goNewDeckBtn').addEventListener('click', function(){
+  showView('view-new-method');
+});
+
+/* =========================================================
+   DECK DETAIL
+========================================================= */
+let currentDeckId=null;
+
+function openDeckDetail(deckId){
+  currentDeckId=deckId;
+  const deck=decks.find(function(d){ return d.id===deckId; });
+  if(!deck) return;
+  document.getElementById('deckDetailName').textContent=deck.name;
+  document.getElementById('deckDetailInfo').textContent=deck.words.length+' mots dans cette fiche.';
+
+  const due=isDeckDue(deckId);
+  document.getElementById('deckDueNote').textContent = due
+    ? '📌 Cette fiche est prête à être révisée.'
+    : "✓ Révisée récemment, pas encore due pour une nouvelle session.";
+
+  const stats=getDeckStats(deckId);
+  const lastPct = stats.history.length ? stats.history[stats.history.length-1].pct : null;
+  const statsGrid=document.getElementById('deckStatsGrid');
+  statsGrid.innerHTML =
+    '<div class="stats-box"><div class="n">'+stats.timesReviewed+'</div><div class="l">RÉVISIONS</div></div>'+
+    '<div class="stats-box"><div class="n">'+(lastPct===null?'—':lastPct+'%')+'</div><div class="l">DERNIER SCORE</div></div>'+
+    '<div class="stats-box"><div class="n">'+deck.words.length+'</div><div class="l">MOTS</div></div>';
+
+  const weak = Object.keys(stats.wordMissCounts||{})
+    .map(function(id){ return { word: deck.words.find(function(w){return w.id===id;}), count: stats.wordMissCounts[id] }; })
+    .filter(function(r){ return r.word; })
+    .sort(function(a,b){ return b.count-a.count; })
+    .slice(0,5);
+  const weakWrap=document.getElementById('deckWeakWordsWrap');
+  const weakList=document.getElementById('deckWeakWordsList');
+  if(weak.length>0){
+    weakWrap.classList.remove('hidden');
+    weakList.innerHTML = weak.map(function(r){
+      return '<div class="weak-word-row"><span>'+escapeHtml(r.word.fr)+'</span><span class="miss-count">'+r.count+' erreur'+(r.count===1?'':'s')+'</span></div>';
+    }).join('');
+  } else {
+    weakWrap.classList.add('hidden');
+  }
+
+  const prog=getProgress(deckId);
+  const resumeBtn=document.getElementById('deckResumeBtn');
+  const startBtn=document.getElementById('deckStartBtn');
+  if(prog && !prog.finished){
+    resumeBtn.classList.remove('hidden');
+    startBtn.textContent='Recommencer depuis le début';
+  } else {
+    resumeBtn.classList.add('hidden');
+    startBtn.textContent='Commencer le quiz';
+  }
+  showView('view-deck');
+}
+
+document.getElementById('deckDuplicateBtn').addEventListener('click', function(){
+  const deck=decks.find(function(d){ return d.id===currentDeckId; });
+  if(!deck) return;
+  const copy={
+    id:uid(),
+    name:deck.name+' (copie)',
+    tags:(deck.tags||[]).slice(),
+    words:deck.words.map(function(w){ return { id:uid(), fr:w.fr, en:w.en.slice() }; }),
+    createdAt:Date.now()
+  };
+  decks.push(copy);
+  saveDecks(decks);
+  showView('view-home');
+  renderHome();
+});
+
+document.getElementById('deckStartBtn').addEventListener('click', function(){
+  clearProgress(currentDeckId);
+  document.getElementById('modeSelectDeckLabel').textContent = decks.find(function(d){return d.id===currentDeckId;}).name;
+  showView('view-mode-select');
+});
+document.getElementById('deckResumeBtn').addEventListener('click', function(){
+  const prog=getProgress(currentDeckId);
+  startQuiz(currentDeckId, true, prog ? prog.mode : 'write');
+});
+document.querySelectorAll('#view-mode-select .method-card').forEach(function(card){
+  card.addEventListener('click', function(){
+    startQuiz(currentDeckId, false, card.getAttribute('data-mode'));
+  });
+});
+document.getElementById('deckEditBtn').addEventListener('click', function(){
+  openEditor(currentDeckId);
+});
+document.getElementById('deckDeleteBtn').addEventListener('click', function(){
+  if(!confirm('Supprimer définitivement cette fiche ?')) return;
+  decks = decks.filter(function(d){ return d.id!==currentDeckId; });
+  saveDecks(decks);
+  clearProgress(currentDeckId);
+  showView('view-home');
+  renderHome();
+});
+
+/* =========================================================
+   MANUAL EDITOR (create + edit)
+========================================================= */
+let editorMode='create'; // 'create' | 'edit'
+let editorDeckId=null;
+
+function makeEditorRow(fr, enVariants){
+  const row=document.createElement('div');
+  row.className='edit-row';
+  const frInput=document.createElement('input');
+  frInput.type='text'; frInput.placeholder='Français'; frInput.value=fr||'';
+  const enInput=document.createElement('input');
+  enInput.type='text'; enInput.placeholder='Anglais (plusieurs réponses possibles: sépare avec /)';
+  enInput.value=Array.isArray(enVariants) ? enVariants.join(' / ') : (enVariants||'');
+  const delBtn=document.createElement('button');
+  delBtn.type='button'; delBtn.className='ghost'; delBtn.textContent='✕';
+  delBtn.addEventListener('click', function(){ row.remove(); });
+  row.appendChild(frInput); row.appendChild(enInput); row.appendChild(delBtn);
+  return row;
+}
+function parseEnVariants(raw){
+  return raw.split('/').map(function(s){ return s.trim(); }).filter(Boolean);
+}
+
+function openEditor(deckId){
+  const list=document.getElementById('editorList');
+  list.innerHTML='';
+  document.getElementById('editorNote').textContent='';
+  const deleteBtn=document.getElementById('editorDeleteBtn');
+  if(deckId){
+    editorMode='edit'; editorDeckId=deckId;
+    const deck=decks.find(function(d){ return d.id===deckId; });
+    document.getElementById('editorEyebrow').textContent='Modifier la fiche';
+    document.getElementById('editorTitle').textContent=deck.name;
+    document.getElementById('editorDeckName').value=deck.name;
+    document.getElementById('editorDeckTags').value=(deck.tags||[]).join(', ');
+    deck.words.forEach(function(w){ list.appendChild(makeEditorRow(w.fr, w.en)); });
+    deleteBtn.classList.remove('hidden');
+  } else {
+    editorMode='create'; editorDeckId=null;
+    document.getElementById('editorEyebrow').textContent='Nouvelle fiche · Manuel';
+    document.getElementById('editorTitle').textContent='Ajouter des mots';
+    document.getElementById('editorDeckName').value='';
+    document.getElementById('editorDeckTags').value='';
+    list.appendChild(makeEditorRow('',''));
+    list.appendChild(makeEditorRow('',''));
+    list.appendChild(makeEditorRow('',''));
+    deleteBtn.classList.add('hidden');
+  }
+  showView('view-editor');
+}
+
+document.getElementById('methodManual').addEventListener('click', function(){ openEditor(null); });
+
+document.getElementById('editorAddRow').addEventListener('click', function(){
+  document.getElementById('editorList').appendChild(makeEditorRow('',''));
+});
+
+document.getElementById('editorDeleteBtn').addEventListener('click', function(){
+  if(!editorDeckId) return;
+  if(!confirm('Supprimer définitivement cette fiche ?')) return;
+  decks = decks.filter(function(d){ return d.id!==editorDeckId; });
+  saveDecks(decks);
+  clearProgress(editorDeckId);
+  showView('view-home');
+  renderHome();
+});
+
+document.getElementById('editorSaveBtn').addEventListener('click', function(){
+  const name=document.getElementById('editorDeckName').value.trim();
+  if(!name){ document.getElementById('editorNote').textContent='Donne un nom à la fiche.'; return; }
+  const tags=document.getElementById('editorDeckTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean);
+  const rows=document.getElementById('editorList').querySelectorAll('.edit-row');
+  const words=[];
+  rows.forEach(function(row){
+    const inputs=row.querySelectorAll('input');
+    const fr=inputs[0].value.trim();
+    const enVariants=parseEnVariants(inputs[1].value);
+    if(fr && enVariants.length){ words.push({id:uid(), fr:fr, en:enVariants}); }
+  });
+  if(words.length===0){ document.getElementById('editorNote').textContent='Ajoute au moins un mot valide.'; return; }
+
+  if(editorMode==='edit'){
+    const deck=decks.find(function(d){ return d.id===editorDeckId; });
+    const oldWords=deck.words;
+    const mergedWords=words.map(function(w, i){
+      if(oldWords[i] && oldWords[i].fr===w.fr && JSON.stringify(oldWords[i].en)===JSON.stringify(w.en)){ return oldWords[i]; }
+      return w;
+    });
+    deck.name=name;
+    deck.tags=tags;
+    deck.words=mergedWords;
+    saveDecks(decks);
+  } else {
+    const deck={ id:uid(), name:name, tags:tags, words:words, createdAt:Date.now() };
+    decks.push(deck);
+    saveDecks(decks);
+  }
+  showView('view-home');
+  renderHome();
+});
+
+/* =========================================================
+   PHOTO IMPORT (Claude vision API)
+========================================================= */
+document.getElementById('methodPhoto').addEventListener('click', function(){
+  document.getElementById('photoInput').value='';
+  document.getElementById('previewImg').style.display='none';
+  document.getElementById('photoEditWrap').classList.add('hidden');
+  document.getElementById('photoDeckName').value='';
+  document.getElementById('scanStatus').textContent='';
+  document.getElementById('photoNote').textContent='';
+  document.getElementById('photoSaveBtn').disabled=true;
+  showView('view-new-photo');
+});
+
+document.getElementById('dropzone').addEventListener('click', function(){
+  document.getElementById('photoInput').click();
+});
+
+document.getElementById('photoInput').addEventListener('change', function(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(){
+    const dataUrl=reader.result;
+    const img=document.getElementById('previewImg');
+    img.src=dataUrl; img.style.display='block';
+    scanImage(dataUrl, file.type);
+  };
+  reader.readAsDataURL(file);
+});
+
+function makePhotoEditRow(fr, en){
+  const row=document.createElement('div');
+  row.className='edit-row';
+  const frInput=document.createElement('input');
+  frInput.type='text'; frInput.value=fr||'';
+  const enInput=document.createElement('input');
+  enInput.type='text'; enInput.value=Array.isArray(en) ? en.join(' / ') : (en||'');
+  enInput.placeholder='Anglais (plusieurs réponses possibles: sépare avec /)';
+  const delBtn=document.createElement('button');
+  delBtn.type='button'; delBtn.className='ghost'; delBtn.textContent='✕';
+  delBtn.addEventListener('click', function(){ row.remove(); });
+  row.appendChild(frInput); row.appendChild(enInput); row.appendChild(delBtn);
+  return row;
+}
+
+async function scanImage(dataUrl, mimeType){
+  const status=document.getElementById('scanStatus');
+  status.innerHTML='<span class="spinner"></span>Lecture de la photo en cours…';
+  document.getElementById('photoSaveBtn').disabled=true;
+  try{
+    const base64Data = dataUrl.split(',')[1];
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: mimeType || "image/jpeg", data: base64Data } },
+            { type: "text", text: "Cette image montre une liste de vocabulaire anglais/français (souvent en deux colonnes, ou avec des puces). Extrais toutes les paires mot-à-mot ou expression-à-expression. Réponds UNIQUEMENT avec un tableau JSON valide, sans aucun texte avant ou après, sans balises markdown, au format exact: [{\"fr\":\"...\",\"en\":[\"...\"]}, ...]. Le champ fr contient le français. Le champ en est un TABLEAU contenant une ou plusieurs formulations anglaises acceptées si l'image en montre plusieurs synonymes séparés par '=' ou '/'; sinon un tableau à un seul élément. Garde les infinitifs 'to' si présents dans l'anglais." }
+          ]
+        }]
+      })
+    });
+    const data = await response.json();
+    let text = (data.content || []).map(function(b){ return b.text || ''; }).join('');
+    text = text.replace(/```json|```/g,'').trim();
+    const pairs = JSON.parse(text);
+    if(!Array.isArray(pairs) || pairs.length===0) throw new Error('empty');
+
+    const list=document.getElementById('photoEditList');
+    list.innerHTML='';
+    pairs.forEach(function(p){
+      list.appendChild(makePhotoEditRow(p.fr||'', p.en||[]));
+    });
+    document.getElementById('photoEditWrap').classList.remove('hidden');
+    status.textContent = pairs.length+' mots détectés — vérifie et corrige si besoin avant de créer la fiche.';
+    document.getElementById('photoSaveBtn').disabled=false;
+  }catch(err){
+    status.textContent = "La lecture automatique n'a pas fonctionné. Cette fonction marche uniquement quand la page est ouverte via son lien claude.ai (pas en fichier local). Tu peux ajouter les mots à la main ci-dessous.";
+    const list=document.getElementById('photoEditList');
+    list.innerHTML='';
+    list.appendChild(makePhotoEditRow('',''));
+    document.getElementById('photoEditWrap').classList.remove('hidden');
+    document.getElementById('photoSaveBtn').disabled=false;
+  }
+}
+
+document.getElementById('photoAddRow').addEventListener('click', function(){
+  document.getElementById('photoEditList').appendChild(makePhotoEditRow('',''));
+});
+
+document.getElementById('photoSaveBtn').addEventListener('click', function(){
+  const name=document.getElementById('photoDeckName').value.trim();
+  if(!name){ document.getElementById('photoNote').textContent='Donne un nom à la fiche.'; return; }
+  const tags=document.getElementById('photoDeckTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean);
+  const rows=document.getElementById('photoEditList').querySelectorAll('.edit-row');
+  const words=[];
+  rows.forEach(function(row){
+    const inputs=row.querySelectorAll('input');
+    const fr=inputs[0].value.trim();
+    const enVariants=parseEnVariants(inputs[1].value);
+    if(fr && enVariants.length){ words.push({id:uid(), fr:fr, en:enVariants}); }
+  });
+  if(words.length===0){ document.getElementById('photoNote').textContent='Ajoute au moins un mot valide.'; return; }
+  const deck={ id:uid(), name:name, tags:tags, words:words, createdAt:Date.now() };
+  decks.push(deck);
+  saveDecks(decks);
+  showView('view-home');
+  renderHome();
+});
+
+/* =========================================================
+   QUIZ ENGINE (shared state)
+========================================================= */
+let quizDeck=null;
+let quizMode='write'; // 'write' | 'assemble' | 'match'
+let queue=[];       // array of word objects (with id/fr/en[])
+let qIdx=0;
+let firstTryCorrect=0;
+let gotFirstTry=true;
+let missedThisRound=[];
+let roundNumber=1;
+let totalWordsSeen=0;
+let masteredIds=new Set();
+let seenOnceIds=new Set();
+
+const frWordEl=document.getElementById('frWord');
+const answerForm=document.getElementById('answerForm');
+const answerInput=document.getElementById('answerInput');
+const feedback=document.getElementById('feedback');
+const attemptsRow=document.getElementById('attemptsRow');
+const progressFill=document.getElementById('progressFill');
+const progressLabel=document.getElementById('progressLabel');
+const repeatBadge=document.getElementById('repeatBadge');
+const quizCard=document.getElementById('quizCard');
+const assembleCard=document.getElementById('assembleCard');
+const matchCard=document.getElementById('matchCard');
+const doneCard=document.getElementById('doneCard');
+const hintBtn=document.getElementById('hintBtn');
+const hintText=document.getElementById('hintText');
+const revealBtn=document.getElementById('revealBtn');
+const revealText=document.getElementById('revealText');
+const quizModeTitle=document.getElementById('quizModeTitle');
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function normalize(s){
+  return s
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[\u2018\u2019\u02bc]/g,"'")
+    .replace(/[\u201c\u201d]/g,'"')
+    .trim().toLowerCase()
+    .replace(/^(to|a|an)\s+/,'')
+    .replace(/[."",!?;:]/g,'')
+    .replace(/\s+/g,' ');
+}
+function primaryEn(item){ return item.en[0]; }
+function wordById(id){
+  return quizDeck.words.find(function(w){ return w.id===id; });
+}
+function currentItem(){ return queue[qIdx]; }
+
+function persistProgress(finished){
+  setProgress(quizDeck.id, {
+    mode: quizMode,
+    queueIds: queue.map(function(w){ return w.id; }),
+    qIdx: qIdx,
+    firstTryCorrect: firstTryCorrect,
+    missedIds: missedThisRound.map(function(w){ return w.id; }),
+    roundNumber: roundNumber,
+    totalWordsSeen: totalWordsSeen,
+    masteredIds: Array.from(masteredIds),
+    seenOnceIds: Array.from(seenOnceIds),
+    finished: !!finished
+  });
+}
+
+const MODE_TITLES={ write:'Écris le mot en anglais', assemble:'Assemble la réponse', match:'Relie les mots' };
+const MODE_CARDS={ write:quizCard, assemble:assembleCard, match:matchCard };
+
+function showModeCard(mode){
+  Object.keys(MODE_CARDS).forEach(function(m){ MODE_CARDS[m].classList.add('hidden'); });
+  MODE_CARDS[mode].classList.remove('hidden');
+}
+
+document.getElementById('quickReviewBtn').addEventListener('click', function(){
+  const weak=weakWordsAcrossDecks(20);
+  if(weak.length===0) return;
+  const seen=new Set();
+  const words=[];
+  weak.forEach(function(r){
+    if(seen.has(r.word.id)) return;
+    seen.add(r.word.id);
+    words.push(r.word);
+  });
+  quizDeck={ id:'__quick_review__', name:'Révision rapide', words:words };
+  document.getElementById('quizDeckLabel').textContent='Révision rapide';
+  quizMode='write';
+  quizModeTitle.textContent=MODE_TITLES.write;
+  queue=shuffle(words.slice());
+  qIdx=0; firstTryCorrect=0; missedThisRound=[]; roundNumber=1;
+  totalWordsSeen=words.length; masteredIds=new Set(); seenOnceIds=new Set();
+  showModeCard('write');
+  doneCard.classList.add('hidden');
+  showView('view-quiz');
+  loadWriteQuestion();
+});
+
+function startQuiz(deckId, resume, mode){
+  quizDeck=decks.find(function(d){ return d.id===deckId; });
+  document.getElementById('quizDeckLabel').textContent=quizDeck.name;
+
+  const prog = resume ? getProgress(deckId) : null;
+  quizMode = prog ? (prog.mode || 'write') : (mode || 'write');
+  quizModeTitle.textContent = MODE_TITLES[quizMode];
+
+  if(prog){
+    queue = prog.queueIds.map(wordById).filter(Boolean);
+    qIdx = Math.min(prog.qIdx, Math.max(queue.length-1,0));
+    firstTryCorrect = prog.firstTryCorrect;
+    missedThisRound = prog.missedIds.map(wordById).filter(Boolean);
+    roundNumber = prog.roundNumber;
+    totalWordsSeen = prog.totalWordsSeen;
+    masteredIds = new Set(prog.masteredIds);
+    seenOnceIds = new Set(prog.seenOnceIds);
+  } else {
+    queue = shuffle(quizDeck.words.slice());
+    qIdx=0; firstTryCorrect=0; missedThisRound=[]; roundNumber=1;
+    totalWordsSeen=quizDeck.words.length; masteredIds=new Set(); seenOnceIds=new Set();
+  }
+  showModeCard(quizMode);
+  doneCard.classList.add('hidden');
+  showView('view-quiz');
+
+  if(quizMode==='write') loadWriteQuestion();
+  else if(quizMode==='assemble') loadAssembleQuestion();
+  else loadMatchBatch();
+}
+
+function updateProgressBar(remainingOverrideLabel){
+  const remaining = totalWordsSeen - masteredIds.size;
+  progressFill.style.width=(masteredIds.size/totalWordsSeen*100)+'%';
+  progressLabel.textContent = remainingOverrideLabel || (remaining+' mot'+(remaining===1?'':'s')+' restant'+(remaining===1?'':'s'));
+}
+
+function showDone(){
+  quizCard.classList.add('hidden');
+  assembleCard.classList.add('hidden');
+  matchCard.classList.add('hidden');
+  doneCard.classList.remove('hidden');
+  progressFill.style.width='100%';
+  progressLabel.textContent='0 mot restant';
+  persistProgress(true);
+  if(quizDeck && quizDeck.id!=='__quick_review__'){
+    recordDeckCompletion(quizDeck.id, firstTryCorrect, totalWordsSeen);
+  } else {
+    recordDailyActivity();
+  }
+  animateScore(firstTryCorrect, totalWordsSeen);
+}
+
+function animateScore(score, total){
+  const scoreNum=document.getElementById('scoreNum');
+  const scoreTotal=document.getElementById('scoreTotal');
+  const scoreMsg=document.getElementById('scoreMsg');
+  const doneBadge=document.getElementById('doneBadge');
+  scoreTotal.textContent='/ '+total;
+  scoreNum.textContent='0';
+  const pct = total>0 ? score/total : 0;
+  let msg;
+  if(pct===1) msg='Sans faute ! Tous les mots connus du premier coup.';
+  else if(pct>=0.75) msg='Très solide, presque tout en un seul essai.';
+  else if(pct>=0.5) msg='Bonne base, encore quelques mots à consolider.';
+  else msg="Continue à réviser, ça va s'ancrer.";
+  scoreMsg.textContent=msg;
+  doneBadge.classList.remove('pop'); void doneBadge.offsetWidth; doneBadge.classList.add('pop');
+  if(score===0){ return; }
+  let current=0;
+  const duration=Math.min(900, 120+score*60);
+  const stepTime=duration/score;
+  const timer=setInterval(function(){
+    current++; scoreNum.textContent=current;
+    if(current>=score){ clearInterval(timer); }
+  }, stepTime);
+}
+
+function advanceQueue(){
+  qIdx++;
+  if(qIdx>=queue.length){
+    if(missedThisRound.length>0){
+      queue=shuffle(missedThisRound.slice());
+      missedThisRound=[];
+      qIdx=0; roundNumber++;
+      return true; // new round started, keep going
+    } else {
+      showDone();
+      return false;
+    }
+  }
+  return true;
+}
+
+/* ---------- WRITE mode ---------- */
+function loadWriteQuestion(){
+  gotFirstTry=true;
+  hintText.classList.add('hidden'); hintText.textContent='';
+  revealText.classList.add('hidden'); revealText.textContent='';
+  const item=currentItem();
+  frWordEl.textContent=item.fr;
+  attemptsRow.innerHTML='';
+  feedback.textContent=''; feedback.className='feedback';
+  answerInput.value=''; answerInput.className='answer-input'; answerInput.disabled=false;
+  answerInput.focus();
+  updateProgressBar();
+  if(seenOnceIds.has(item.id)){
+    repeatBadge.textContent='🔁 Déjà vu — on retente';
+    repeatBadge.classList.remove('hidden');
+  } else {
+    repeatBadge.classList.add('hidden');
+  }
+  persistProgress(false);
+}
+
+answerForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  const val=answerInput.value.trim();
+  if(!val) return;
+  const item=currentItem();
+  const correctVariants=item.en.concat(item.en.map(function(v){ return v.replace(/^to\s+/,''); }));
+  const isCorrect = correctVariants.some(function(v){ return normalize(v)===normalize(val); });
+
+  if(isCorrect){
+    answerInput.className='answer-input right';
+    feedback.textContent='Correct ! → '+primaryEn(item);
+    feedback.className='feedback ok';
+    answerInput.disabled=true;
+    if(gotFirstTry && roundNumber===1) firstTryCorrect++;
+    masteredIds.add(item.id);
+    speak(primaryEn(item));
+    setTimeout(function(){ if(advanceQueue()) loadWriteQuestion(); }, 900);
+  } else {
+    gotFirstTry=false;
+    seenOnceIds.add(item.id);
+    if(!missedThisRound.includes(item)) missedThisRound.push(item);
+    if(quizDeck && quizDeck.id!=='__quick_review__') recordWordMiss(quizDeck.id, item.id);
+    answerInput.className='answer-input wrong';
+    feedback.textContent='Pas encore. Réessaie !';
+    feedback.className='feedback err';
+    const chip=document.createElement('span');
+    chip.className='attempt-chip'; chip.textContent=val;
+    attemptsRow.appendChild(chip);
+    answerInput.value=''; answerInput.focus();
+  }
+});
+
+hintBtn.addEventListener('click', function(){
+  const item=currentItem();
+  const en=primaryEn(item);
+  hintText.textContent='Indice : commence par "'+en.charAt(0).toUpperCase()+'…", '+en.split(' ').length+' mot(s).';
+  hintText.classList.remove('hidden');
+});
+revealBtn.addEventListener('click', function(){
+  const item=currentItem();
+  revealText.textContent='Réponse : '+primaryEn(item)+' — tape-la ci-dessus pour valider.';
+  revealText.classList.remove('hidden');
+  seenOnceIds.add(item.id);
+  if(!missedThisRound.includes(item)) missedThisRound.push(item);
+  if(quizDeck && quizDeck.id!=='__quick_review__') recordWordMiss(quizDeck.id, item.id);
+  gotFirstTry=false;
+  speak(primaryEn(item));
+});
+
+/* ---------- ASSEMBLE mode ---------- */
+const assembleFrWord=document.getElementById('assembleFrWord');
+const assembleRepeatBadge=document.getElementById('assembleRepeatBadge');
+const assembleAnswerSlot=document.getElementById('assembleAnswerSlot');
+const assembleTilesEl=document.getElementById('assembleTiles');
+const assembleFeedback=document.getElementById('assembleFeedback');
+const assembleClearBtn=document.getElementById('assembleClearBtn');
+const assembleRevealBtn=document.getElementById('assembleRevealBtn');
+
+let assembleTarget=[];
+let assembleProgress=0;
+let assembleTiles=[];
+
+function loadAssembleQuestion(){
+  gotFirstTry=true;
+  assembleFeedback.textContent=''; assembleFeedback.className='feedback';
+  const item=currentItem();
+  assembleFrWord.textContent=item.fr;
+  updateProgressBar();
+  if(seenOnceIds.has(item.id)){
+    assembleRepeatBadge.textContent='🔁 Déjà vu — on retente';
+    assembleRepeatBadge.classList.remove('hidden');
+  } else {
+    assembleRepeatBadge.classList.add('hidden');
+  }
+  const target=primaryEn(item);
+  assembleTarget = target.indexOf(' ')>=0 ? target.split(' ') : target.split('');
+  assembleProgress=0;
+  assembleTiles = shuffle(assembleTarget.map(function(tok, i){ return {token:tok, key:i+'-'+tok}; }).slice());
+  renderAssembleTiles();
+  renderAssembleSlot();
+  persistProgress(false);
+}
+
+function renderAssembleSlot(){
+  assembleAnswerSlot.innerHTML='';
+  if(assembleProgress===0){
+    const ph=document.createElement('span');
+    ph.className='placeholder'; ph.textContent='Clique les morceaux dans le bon ordre…';
+    assembleAnswerSlot.appendChild(ph);
+    return;
+  }
+  for(let i=0;i<assembleProgress;i++){
+    const span=document.createElement('span');
+    span.className='answer-tile';
+    span.textContent=assembleTarget[i];
+    assembleAnswerSlot.appendChild(span);
+  }
+}
+
+function renderAssembleTiles(){
+  assembleTilesEl.innerHTML='';
+  assembleTiles.forEach(function(tile, idx){
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='tile';
+    btn.textContent=tile.token;
+    btn.dataset.idx=idx;
+    if(tile.used) btn.classList.add('placed');
+    btn.addEventListener('click', function(){
+      if(tile.used) return;
+      const expected=assembleTarget[assembleProgress];
+      if(tile.token===expected){
+        tile.used=true;
+        assembleProgress++;
+        btn.classList.add('placed');
+        renderAssembleSlot();
+        if(assembleProgress>=assembleTarget.length){
+          onAssembleSuccess();
+        }
+      } else {
+        gotFirstTry=false;
+        const item=currentItem();
+        seenOnceIds.add(item.id);
+        if(!missedThisRound.includes(item)) missedThisRound.push(item);
+        if(quizDeck && quizDeck.id!=='__quick_review__') recordWordMiss(quizDeck.id, item.id);
+        btn.classList.add('placed');
+        setTimeout(function(){ btn.classList.remove('placed'); }, 260);
+        assembleFeedback.textContent='Pas dans le bon ordre, réessaie !';
+        assembleFeedback.className='feedback err';
+      }
+    });
+    assembleTilesEl.appendChild(btn);
+  });
+}
+
+function onAssembleSuccess(){
+  const item=currentItem();
+  assembleFeedback.textContent='Correct ! → '+primaryEn(item);
+  assembleFeedback.className='feedback ok';
+  if(gotFirstTry && roundNumber===1) firstTryCorrect++;
+  masteredIds.add(item.id);
+  speak(primaryEn(item));
+  setTimeout(function(){ if(advanceQueue()) loadAssembleQuestion(); }, 900);
+}
+
+assembleClearBtn.addEventListener('click', function(){
+  assembleTiles.forEach(function(t){ t.used=false; });
+  assembleProgress=0;
+  renderAssembleTiles();
+  renderAssembleSlot();
+});
+assembleRevealBtn.addEventListener('click', function(){
+  const item=currentItem();
+  assembleFeedback.textContent='Réponse : '+primaryEn(item)+' — reconstitue-la ci-dessus pour valider.';
+  assembleFeedback.className='feedback';
+  seenOnceIds.add(item.id);
+  if(!missedThisRound.includes(item)) missedThisRound.push(item);
+  if(quizDeck && quizDeck.id!=='__quick_review__') recordWordMiss(quizDeck.id, item.id);
+  gotFirstTry=false;
+  speak(primaryEn(item));
+});
+
+/* ---------- MATCH mode ---------- */
+const matchColFr=document.getElementById('matchColFr');
+const matchColEn=document.getElementById('matchColEn');
+const matchFeedback=document.getElementById('matchFeedback');
+const MATCH_BATCH_SIZE=6;
+let matchBatchWords=[];
+let matchState={}; // id -> {hadWrong:false, done:false}
+let matchSelectedFr=null;
+let matchSelectedEn=null;
+
+function loadMatchBatch(){
+  matchFeedback.textContent=''; matchFeedback.className='feedback';
+  matchSelectedFr=null; matchSelectedEn=null;
+  matchBatchWords = queue.slice(qIdx, qIdx+MATCH_BATCH_SIZE);
+  matchState={};
+  matchBatchWords.forEach(function(w){ matchState[w.id]={hadWrong:false, done:false}; });
+  updateProgressBar();
+
+  const frOrder=shuffle(matchBatchWords.slice());
+  const enOrder=shuffle(matchBatchWords.slice());
+
+  matchColFr.innerHTML=''; matchColEn.innerHTML='';
+  frOrder.forEach(function(w){
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='match-item'; btn.textContent=w.fr;
+    btn.dataset.id=w.id; btn.dataset.side='fr';
+    btn.addEventListener('click', function(){ onMatchClick(btn, w, 'fr'); });
+    matchColFr.appendChild(btn);
+  });
+  enOrder.forEach(function(w){
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='match-item'; btn.textContent=primaryEn(w);
+    btn.dataset.id=w.id; btn.dataset.side='en';
+    btn.addEventListener('click', function(){ onMatchClick(btn, w, 'en'); });
+    matchColEn.appendChild(btn);
+  });
+  persistProgress(false);
+}
+
+function onMatchClick(btn, word, side){
+  if(btn.classList.contains('correct')) return;
+  if(side==='fr'){
+    if(matchSelectedFr) matchSelectedFr.el.classList.remove('selected');
+    matchSelectedFr={ el:btn, word:word };
+    btn.classList.add('selected');
+  } else {
+    if(matchSelectedEn) matchSelectedEn.el.classList.remove('selected');
+    matchSelectedEn={ el:btn, word:word };
+    btn.classList.add('selected');
+  }
+  if(matchSelectedFr && matchSelectedEn){
+    const isMatch = matchSelectedFr.word.id===matchSelectedEn.word.id;
+    const frEl=matchSelectedFr.el, enEl=matchSelectedEn.el;
+    const frWord=matchSelectedFr.word, enWord=matchSelectedEn.word;
+    if(isMatch){
+      frEl.classList.remove('selected'); enEl.classList.remove('selected');
+      frEl.classList.add('correct'); enEl.classList.add('correct');
+      const st=matchState[frWord.id];
+      st.done=true;
+      masteredIds.add(frWord.id);
+      speak(primaryEn(frWord));
+      if(st.hadWrong){
+        if(!missedThisRound.includes(frWord)) missedThisRound.push(frWord);
+        seenOnceIds.add(frWord.id);
+      } else if(roundNumber===1){
+        firstTryCorrect++;
+      }
+      matchSelectedFr=null; matchSelectedEn=null;
+      checkMatchBatchComplete();
+    } else {
+      frEl.classList.add('wrong'); enEl.classList.add('wrong');
+      if(matchState[frWord.id]) matchState[frWord.id].hadWrong=true;
+      if(matchState[enWord.id]) matchState[enWord.id].hadWrong=true;
+      if(quizDeck && quizDeck.id!=='__quick_review__'){
+        recordWordMiss(quizDeck.id, frWord.id);
+      }
+      setTimeout(function(){
+        frEl.classList.remove('wrong','selected'); enEl.classList.remove('wrong','selected');
+      }, 500);
+      matchSelectedFr=null; matchSelectedEn=null;
+    }
+  }
+}
+
+function checkMatchBatchComplete(){
+  const allDone = matchBatchWords.every(function(w){ return matchState[w.id].done; });
+  if(!allDone) return;
+  qIdx += matchBatchWords.length;
+  setTimeout(function(){
+    if(qIdx>=queue.length){
+      if(missedThisRound.length>0){
+        queue=shuffle(missedThisRound.slice());
+        missedThisRound=[];
+        qIdx=0; roundNumber++;
+        loadMatchBatch();
+      } else {
+        showDone();
+      }
+    } else {
+      loadMatchBatch();
+    }
+  }, 500);
+}
+
+/* ---------- Navigation out of quiz ---------- */
+document.getElementById('quizBackBtn').addEventListener('click', function(){
+  showView('view-home'); renderHome();
+});
+document.getElementById('doneHomeBtn').addEventListener('click', function(){
+  clearProgress(quizDeck.id);
+  showView('view-home'); renderHome();
+});
+document.getElementById('doneRestartBtn').addEventListener('click', function(){
+  clearProgress(quizDeck.id);
+  startQuiz(quizDeck.id, false, quizMode);
+});
+
+/* =========================================================
+   INIT
+========================================================= */
+renderAccountView();
+const existingSession=getSessionUser();
+if(existingSession){
+  const users=loadUsers();
+  const user=users[existingSession];
+  if(user){
+    currentUser=existingSession;
+    document.getElementById('homeEyebrow').textContent='Vocab Hub · '+user.displayName;
+    seedDefaultDeckIfEmpty();
+    decks=loadDecks();
+    showView('view-home');
+    renderHome();
+  } else {
+    setSessionUser(null);
+    showView('view-account');
+  }
+} else {
+  showView('view-account');
+}
+</script>
+</body>
+</html>
